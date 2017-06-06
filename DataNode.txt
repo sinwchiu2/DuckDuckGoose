@@ -1,0 +1,30 @@
+#include<iostream>
+using namespace std;
+
+#ifndef DATANODE_H
+#define DATANODE_H
+
+//ensure the correctness of friend statement
+template <typename T> 
+class DoublyLinkedList; 
+
+template <typename T> 
+class DataNode
+{
+	public:
+		T data;	//data member store the data
+		DataNode<T>* prev;//data member point to the previous node
+		DataNode<T>* next;//data member point to the next node
+		template <typename T> friend class DoublyLinkedList;//facilitate efficient access of data members
+	public:
+		DataNode(T val, DataNode<T>* p=null, DataNode<T>* n=null);//constructor
+};
+
+template <typename T>
+DataNode<T>::DataNode(T val, DataNode<T>* p=NULL, DataNode<T>* n=NULL)//constructor
+{
+	data = val;
+	prev = p;
+	next = n;
+}
+#endif

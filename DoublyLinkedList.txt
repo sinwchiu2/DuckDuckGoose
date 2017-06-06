@@ -1,0 +1,359 @@
+#include"DataNode.h"
+#include<iostream>
+using namespace std;
+
+#ifndef DOUBLYLINKEDLIST_H
+#define DOUBLYLINKEDLIST_H
+
+template <typename T>
+class DataNode;
+
+template <typename T>
+class DoublyLinkedList
+{
+	private:
+		DataNode<T>* head;						//store the address of the first DataNode
+		DataNode<T>* tail;						//store the address of the last DataNode
+	public:
+		DoublyLinkedList();						//constructor that initializes the data members
+		~DoublyLinkedList();					//destructor that destory all DataNode
+		bool isEmpty() const;					//member function that checks whether the list is empty
+		void insertFront(T el);					//member function that insert data at the front of the list
+		void insertBack(T el);					//member function that insert data at the back of the list
+		T removeFront();						//member function remove data at the front & return removed data
+		T removeBack();							//member function remove data at the back & return removed data
+		void insertNode(T el, int index);		//member function insert data to the position after the node(index), index 0 is insert to the beginning
+		void deleteNode(int index);				//member function delete data node at position specified by index, 0 is the first node
+		T get(int index) const;					//member function get the data at position specified by index, 0 is the first node
+		void sort(int index);					//member function sort the data from specifies by index to the end in non-decreasing order
+		void printList() const;					//member function to display all the data in the list on screen
+};
+
+template <typename T>
+DoublyLinkedList<T>::DoublyLinkedList()
+{
+	head = NULL;
+	tail = NULL;
+}
+
+template <typename T>
+DoublyLinkedList<T>::~DoublyLinkedList()
+{
+	DataNode<T>* currNode = head;
+	DataNode<T>* nextNode = NULL;
+	//delete all nodes
+	while(currNode != NULL)
+	{
+		nextNode = currNode->next;
+		delete currNode;
+		currNode = nextNode;
+	}
+}
+
+template <typename T>
+bool DoublyLinkedList<T>::isEmpty()const
+{
+	if(head == NULL)
+		return true;	//return true if the list is empty
+	else
+		return false;	//return false if the list is not empty
+}
+
+template <typename T>
+void DoublyLinkedList<T>::insertFront(T el)
+{
+	DataNode<T>* newNode = new DataNode<T>(el, NULL, NULL);
+
+	if(head!=NULL)		//insert intto a non-empty list
+	{
+		newNode->next = head;
+		head->prev = newNode;
+		head = newNode;
+	}
+
+	else				//insert to an empty list
+	{
+		head = newNode;
+		tail = newNode;
+	}	
+}
+
+template <typename T>
+void DoublyLinkedList<T>::insertBack(T el)
+{
+	DataNode<T>* newNode = new DataNode<T>(el,NULL, NULL);
+
+	if(head!=NULL)
+	{
+		newNode->prev = tail;
+		tail->next = newNode;
+		tail = newNode;
+	}
+
+	else
+	{
+		head = newNode;
+		tail = newNode;
+	}
+}
+
+template <typename T>
+T DoublyLinkedList<T>::removeFront()
+{
+	if(head==NULL)			//nothing to remove for an empty list
+		return NULL;
+
+	T data;	
+	DataNode<T>* tempNode = head;
+
+	head = tempNode->next;	
+	head->prev = NULL;
+	data = tempNode->data;	//store the data to be removed in the varible
+	delete tempNode;
+	return data;			//return the removed data
+}
+
+template <typename T>
+T DoublyLinkedList<T>::removeBack()
+{
+	if(head==NULL)			//nothing to remove for an empty list
+		return NULL;
+
+	T data;
+	DataNode<T>* tempNode = tail;
+
+	tail = tempNode->prev;
+	tail->next = NULL;
+	data = tempNode->data;	//store the data to be removed in the varible
+	delete tempNode;
+	return data;			//return the removed data
+	
+}
+
+template <typename T>
+void DoublyLinkedList<T>::insertNode(T el, int index)
+{
+	if(index < 0)			//invalid input
+	{
+		cout << "ERROR! index cannot be less than 0!" << endl;
+		return;
+	}
+
+	int currIndex = 1;		//insert after the first node index is 1, insert before the first node index is 0
+	DataNode<T>* currNode = head;
+
+	//locate the node at position index
+	while(currNode && index > currIndex)
+	{
+		currNode = currNode->next;
+		currIndex++;
+	}
+
+	if(index > 0 && currNode == NULL)	//invalid input
+	{
+		cout << "ERROR! Index cannot be greater the list!" << endl;
+		return;
+	}
+
+	DataNode<T>* newNode = new DataNode<T>(el, NULL, NULL);
+
+	if(index == 0)				//insert at the very beginning
+	{
+		currNode->prev = newNode;
+		newNode->next = currNode;
+		head = newNode;
+	}
+	
+	else						//insert after the position index
+		if(currNode == tail)	//handle insertion at the last node
+		{
+			currNode->next = newNode;
+			newNode->prev = currNode;			
+			tail = newNode;
+		}
+		else					//handle insertion between the first node and the last node
+		{
+			currNode->next->prev = newNode;
+			newNode->next = currNode->next;
+			newNode->prev = currNode;
+			currNode->next = newNode;
+		}
+}
+
+template <typename T>
+void DoublyLinkedList<T>::deleteNode(int index)
+{
+	if(index < 0)				//invalid input
+	{
+		cout << "ERROR! index cannot be less than 0!" << endl;
+		return;
+	}
+
+	int currIndex = 0;			//delete the first node if the index is 0
+	DataNode<T>* currNode = head;
+
+	while(currNode && index > currIndex)
+	{
+		currNode = currNode->next;
+		currIndex++;
+	}
+
+	if(index > 0 && currNode == NULL)	//invalid input
+	{
+		cout << "ERROR! Index cannot be greater the list!" << endl;
+		return;
+	}
+
+	//delete the node
+	if(currNode == head)		//delete of the first node
+	{
+		head = currNode->next;
+		head->prev = NULL;
+		delete currNode;
+	}
+	else
+		if(currNode == tail)	//delete the last node
+		{
+			tail = currNode->prev;
+			tail->next = NULL;
+			delete currNode;
+		}
+		else					//delete the node between head and tail
+		{
+			currNode->prev->next = currNode->next;
+			currNode->next->prev = currNode->prev;
+			delete currNode;
+		}
+}
+
+template <typename T>
+T DoublyLinkedList<T>::get(int index) const
+{
+	if(index < 0)				//invalid input
+	{
+		cout << "ERROR! Index cannot be less than 0!" << endl;
+		return NULL;
+	}
+
+	int currIndex = 0;			//get the first node if the index is 0
+	DataNode<T>* currNode = head;
+
+	while(currNode && index > currIndex)
+	{
+		currNode = currNode->next;
+		currIndex++;
+	}
+
+	if(index > 0 && currNode == NULL)	//invalid input
+	{
+		cout << "ERROR! Index cannot be greater the list!" << endl;
+		return NULL;
+	}
+	return currNode->data;
+}
+
+//help do the merge sort
+template <typename T>
+DataNode<T>* Split(DataNode<T>* currNode)
+{
+    DataNode<T>* secondNode;		
+
+    if (currNode == NULL)			
+		return NULL;
+    else
+		if(currNode->next == NULL)
+			return NULL;
+		else						
+		{
+			secondNode = currNode->next;
+			currNode->next = secondNode->next;
+			secondNode->next = Split(secondNode->next);
+			return secondNode;
+		}
+}
+
+//function help do the merge sort
+template <typename T>
+DataNode<T>* Merge(DataNode<T>* firstNode, DataNode<T>* secondNode)
+{
+    if(firstNode == NULL)
+		return secondNode;
+	else
+		if(secondNode == NULL)
+			return firstNode;
+		else
+			if(firstNode->data <= secondNode->data)		//sort the list in non-decreasing order
+			{
+				firstNode->next = Merge(firstNode->next, secondNode);
+				return firstNode;
+			}
+			else 
+			{
+				secondNode->next = Merge(firstNode, secondNode->next);
+				return secondNode;
+			}
+}
+
+//function help do the merge sort
+template <typename T>
+DataNode<T>* MergeSort(DataNode<T>* currNode)
+{
+    DataNode<T>* secondNode;		
+
+    if (currNode == NULL)			
+        return NULL;
+    else 
+		if (currNode->next == NULL)	
+			return currNode;
+		else						
+		{
+			secondNode = Split(currNode);	//split the list
+			return Merge(MergeSort(currNode), MergeSort(secondNode));	//merge the splited list
+		}
+}
+
+template <typename T>
+void DoublyLinkedList<T>::sort(int index)
+{
+	if(index < 0)			//invalid input
+	{
+		cout << "ERROR! index cannot be less than 0!" << endl;
+		return;
+	}
+
+	int currIndex = 0;		//sort the first node to the end
+	DataNode<T>* currNode = head;
+
+	while(currNode && index > currIndex)
+	{
+		currNode = currNode->next;
+		currIndex++;
+	}
+
+	if(index > 0 && currNode == NULL)
+	{
+		cout << "ERROR! Index cannot be greater the list!" << endl;
+		return;
+	}
+
+	//using merge sort
+	head = MergeSort(currNode);
+
+	//update the tail
+	currNode = head;
+	while(currNode->next != NULL)
+		currNode = currNode->next;
+	tail = currNode;
+}
+
+template <typename T>
+void DoublyLinkedList<T>::printList() const // function to display the list
+{
+	DataNode<T>* currNode = head;
+	while(currNode != NULL)
+	{
+		cout << currNode->data << " ";
+		currNode = currNode->next;
+	}
+}
+#endif
